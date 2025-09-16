@@ -1,45 +1,51 @@
 return {
-	-- Configuração do Language Server do Dart
-	{
-		"neovim/nvim-lspconfig",
-		---@class PluginLspOpts
-		opts = {
-			servers = {
-				dartls = {
-					settings = {
-						dart = {
-							completeFunctionCalls = true,
-							showTodos = true,
-						},
-					},
-				},
-			},
-		},
-	},
+  -- Configuração do Language Server do Dart (para Termux)
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        dartls = {
+          -- O comando padrão não funciona no Termux.
+          -- Precisamos especificar o caminho exato para o snapshot do servidor.
+          cmd = {
+            "dart",
+            vim.fn.expand("$PREFIX") .. "/libexec/dart/bin/snapshots/analysis_server.dart.snapshot",
+            "--lsp",
+          },
+          settings = {
+            dart = {
+              completeFunctionCalls = true,
+              showTodos = true,
+            },
+          },
+        },
+      },
+    },
+  },
 
-	-- Syntax highlighting (opcional, mas recomendado)
-	{ "dart-lang/dart-vim-plugin" },
+  -- Syntax highlighting
+  { "dart-lang/dart-vim-plugin" },
 
-	-- Configuração do Debugger (DAP) para Dart
-	{
-		"mfussenegger/nvim-dap",
-		opts = function()
-			local dap = require("dap")
-			dap.adapters.dart = {
-				type = "executable",
-				command = "dart", -- 'dart' já está no $PATH do Termux
-				args = { "debug_adapter" },
-			}
-			-- Configuração de debug para um script Dart genérico
-			dap.configurations.dart = {
-				{
-					name = "Launch current file", -- Inicia o debug para o arquivo atual
-					type = "dart",
-					request = "launch",
-					program = "${file}", -- Variável que representa o arquivo atual
-					cwd = "${workspaceFolder}",
-				},
-			}
-		end,
-	},
+  -- Configuração do Debugger (DAP) para Dart (para Termux)
+  {
+    "mfussenegger/nvim-dap",
+    opts = function()
+      local dap = require("dap")
+      -- Também precisamos apontar para o snapshot do debug adapter
+      dap.adapters.dart = {
+        type = "executable",
+        command = "dart",
+        args = { vim.fn.expand("$PREFIX") .. "/libexec/dart/bin/snapshots/debug_adapter.dart.snapshot" },
+      }
+      dap.configurations.dart = {
+        {
+          name = "Launch current file",
+          type = "dart",
+          request = "launch",
+          program = "${file}",
+          cwd = "${workspaceFolder}",
+        },
+      }
+    end,
+  },
 }
